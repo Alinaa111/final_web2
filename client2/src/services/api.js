@@ -51,6 +51,7 @@ export const productService = {
   getAll: (params) => api.get('/products', { params }),
   getById: (id) => api.get(`/products/${id}`),
   getFeatured: () => api.get('/products/featured'),
+  getMine: () => api.get('/products/mine'),
   create: (productData) => api.post('/products', productData),
   update: (id, productData) => api.patch(`/products/${id}`, productData),
   updateStock: (id, stockData) => api.patch(`/products/${id}/stock`, stockData),

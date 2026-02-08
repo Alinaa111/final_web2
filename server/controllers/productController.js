@@ -104,6 +104,25 @@ const getProducts = async (req, res) => {
   }
 };
 
+const getMyProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ seller: req.user._id, isActive: true })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      data: products
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching my products',
+      error: error.message
+    });
+  }
+};
+
 // ===============================================
 // @desc    Get single product by ID
 // @route   GET /api/products/:id
@@ -470,6 +489,7 @@ const getFeaturedProducts = async (req, res) => {
 
 module.exports = {
   getProducts,
+  getMyProducts,
   getProductById,
   createProduct,
   updateProduct,
