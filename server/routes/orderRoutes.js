@@ -8,7 +8,7 @@ const {
   updateOrderStatus,
   cancelOrder
 } = require('../controllers/orderController');
-const { protect, authorizeAdmin } = require('../middleware/auth');
+const { protect, authorizeAdmin, authorizeRoles } = require('../middleware/auth');
 
 // All order routes require authentication
 router.use(protect);
@@ -19,8 +19,8 @@ router.get('/me', getMyOrders);
 router.get('/:id', getOrderById);
 router.delete('/:id', cancelOrder);
 
-// Admin routes
-router.get('/', authorizeAdmin, getAllOrders);
-router.patch('/:id/status', authorizeAdmin, updateOrderStatus);
+// Admin & Seller routes
+router.get('/', authorizeRoles('admin', 'seller'), getAllOrders);
+router.patch('/:id/status', authorizeRoles('admin', 'seller'), updateOrderStatus);
 
 module.exports = router;

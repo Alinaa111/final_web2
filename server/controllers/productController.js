@@ -25,6 +25,11 @@ const getProducts = async (req, res) => {
     // Build query object
     let query = { isActive: true };
 
+    // If seller, only show their products
+    if (req.user && req.user.role === 'seller') {
+      query.seller = req.user._id;
+    }
+
     // TEXT SEARCH (Advanced Feature - uses text index)
     if (search) {
       query.$text = { $search: search };
@@ -139,6 +144,14 @@ const createProduct = async (req, res) => {
   try {
     const payload = { ...req.body };
 
+    // Assign seller if user is a seller
+    if (req.user.role === 'seller') {
+      payload.seller = req.user._id;
+    } else if (req.user.role === 'admin' && !payload.seller) {
+      // Admins must specify a seller or default to themselves
+      payload.seller = req.user._id;
+    }
+
     // Coerce numeric fields that might arrive as strings
     if (payload.price !== undefined) payload.price = Number(payload.price);
     if (payload.discountPercentage !== undefined) payload.discountPercentage = Number(payload.discountPercentage);
@@ -206,6 +219,14 @@ const updateProduct = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Product not found'
+      });
+    }
+
+    // Check if seller owns this product
+    if (req.user.role === 'seller' && product.seller.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to update this product'
       });
     }
 
@@ -328,6 +349,14 @@ const deleteProduct = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Product not found'
+      });
+    }
+
+    // Check if seller owns this product
+    if (req.user.role === 'seller' && product.seller.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to delete this product'
       });
     }
 

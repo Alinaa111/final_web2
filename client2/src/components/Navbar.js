@@ -5,10 +5,11 @@ import './Navbar.css';
 import logo from '../logo.png';
 
 const Navbar = () => {
-  const { isAuthenticated, user, logout, isAdmin } = useAuth();
+  const { isAuthenticated, user, logout, isAdmin, isSeller } = useAuth();
   const { getCartItemsCount } = useCart();
 
   const admin = typeof isAdmin === 'function' ? isAdmin() : false;
+  const seller = typeof isSeller === 'function' ? isSeller() : false;
 
   return (
     <nav className="navbar">
@@ -31,6 +32,7 @@ const Navbar = () => {
 
               <li><Link to="/profile">Profile</Link></li>
               {admin && <li><Link to="/admin">Admin</Link></li>}
+              {seller && <li><Link to="/seller-dashboard">Seller</Link></li>}
               <li><button onClick={logout} className="logout-btn">Logout</button></li>
               <li className="user-greeting">Hi, {user?.name}</li>
             </>

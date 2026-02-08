@@ -13,6 +13,7 @@ import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
+import SellerDashboard from './pages/SellerDashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Checkout from './pages/Checkout';
@@ -24,14 +25,18 @@ import './styles/ui.css';
 
 
 // Protected Route Component
-const ProtectedRoute = ({ children, adminOnly = false }) => {
-  const { isAuthenticated, isAdmin } = useAuth();
+const ProtectedRoute = ({ children, adminOnly = false, sellerOnly = false }) => {
+  const { isAuthenticated, isAdmin, isSeller } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
 
   if (adminOnly && !isAdmin()) {
+    return <Navigate to="/" />;
+  }
+
+  if (sellerOnly && !isSeller() && !isAdmin()) {
     return <Navigate to="/" />;
   }
 
@@ -86,6 +91,14 @@ function App() {
                   element={
                     <ProtectedRoute adminOnly={true}>
                       <AdminDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/seller-dashboard" 
+                  element={
+                    <ProtectedRoute sellerOnly={true}>
+                      <SellerDashboard />
                     </ProtectedRoute>
                   } 
                 />
