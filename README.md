@@ -1,4 +1,4 @@
-👟 Bir Kadam E-commerce Platform - Advanced NoSQL Project
+ Bir Kadam E-commerce Platform - WEB Technologies 2 (Back End) Final Project
 
 A full-stack e-commerce application built with Node.js, Express, MongoDB, and React, showcasing advanced NoSQL database features and a robust, scalable architecture. This platform is designed to support multiple user roles, including a new Seller role, and is branded as Bir Kadam.
 
@@ -291,6 +291,8 @@ Detailed product view allowing users to select colors and sizes, add to cart, an
 
 
 <img width="1856" height="913" alt="image" src="https://github.com/user-attachments/assets/bc7cba06-c9c9-48d9-92d7-afc75ffe0c3e" />
+
+
 
 
 

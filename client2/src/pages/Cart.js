@@ -33,6 +33,11 @@ const Cart = () => {
 
   return (
     <div className="cart-page">
+      {/* Back Button */}
+      <button className="back-button" onClick={() => navigate('/shop')}>
+        ← Back to Shop
+      </button>
+
       <h1>Shopping Cart</h1>
 
       <div className="cart-container">

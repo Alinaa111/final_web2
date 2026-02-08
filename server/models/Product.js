@@ -77,6 +77,11 @@ const reviewSchema = new mongoose.Schema({
 // 7. Virtual properties
 // 8. Pre/Post hooks
 const productSchema = new mongoose.Schema({
+  seller: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   name: {
     type: String,
     required: [true, 'Product name is required'],

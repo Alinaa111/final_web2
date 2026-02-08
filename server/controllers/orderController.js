@@ -197,6 +197,13 @@ const getAllOrders = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
+    // If seller, filter orders to only include those containing their products
+    if (req.user.role === 'seller') {
+      const sellerProducts = await Product.find({ seller: req.user._id }).select('_id');
+      const productIds = sellerProducts.map(p => p._id);
+      query['items.product'] = { $in: productIds };
+    }
+
     const orders = await Order.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -243,6 +250,20 @@ const updateOrderStatus = async (req, res) => {
         success: false,
         message: 'Order not found'
       });
+    }
+
+    // If seller, check if the order contains their products
+    if (req.user.role === 'seller') {
+      const sellerProducts = await Product.find({ seller: req.user._id }).select('_id');
+      const productIds = sellerProducts.map(p => p._id.toString());
+      const hasSellerProduct = order.items.some(item => productIds.includes(item.product.toString()));
+      
+      if (!hasSellerProduct) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to update this order'
+        });
+      }
     }
 
     await order.updateStatus(status, note);

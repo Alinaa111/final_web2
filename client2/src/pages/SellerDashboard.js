@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { productService, orderService, analyticsService } from '../services/api';
-import '../styles/AdminDashboard.css';
+import { productService, orderService } from '../services/api';
+import '../styles/AdminDashboard.css'; // Reusing admin styles
 
-const AdminDashboard = () => {
+const SellerDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [analytics, setAnalytics] = useState(null);
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
 
@@ -36,11 +35,11 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (activeTab === 'products') fetchProducts();
     if (activeTab === 'orders') fetchOrders();
-    if (activeTab === 'analytics') fetchAnalytics();
   }, [activeTab]);
 
   const fetchProducts = async () => {
     try {
+      // Backend should filter by seller automatically if user is a seller
       const response = await productService.getAll();
       const payload = response.data;
       const data = payload?.data ?? payload;
@@ -53,6 +52,7 @@ const AdminDashboard = () => {
 
   const fetchOrders = async () => {
     try {
+      // Backend should filter by seller's products automatically
       const response = await orderService.getAll();
       const payload = response.data;
       const data = payload?.data ?? payload;
@@ -60,30 +60,6 @@ const AdminDashboard = () => {
       setOrders(list);
     } catch (error) {
       console.error('Error fetching orders:', error);
-    }
-  };
-
-  const fetchAnalytics = async () => {
-    try {
-      const [revenue, topRated, inventory] = await Promise.all([
-        analyticsService.getRevenue(),
-        analyticsService.getTopRated(),
-        analyticsService.getInventory()
-      ]);
-
-      const pick = (resp) => {
-        const payload = resp?.data;
-        const data = payload?.data ?? payload;
-        return data;
-      };
-
-      setAnalytics({
-        revenue: pick(revenue),
-        topRated: pick(topRated),
-        inventory: pick(inventory)
-      });
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
     }
   };
 
@@ -268,31 +244,37 @@ const AdminDashboard = () => {
     setShowProductForm(true);
   };
 
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      await orderService.updateStatus(orderId, { status: newStatus });
+      fetchOrders();
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      alert('Failed to update status');
+    }
+  };
+
   return (
     <div className="admin-dashboard">
-      {/* Back Button */}
       <button className="back-button" onClick={() => navigate('/')}>
         ← Back to Home
       </button>
 
-      <h1>Admin Dashboard</h1>
+      <h1>Seller Dashboard</h1>
 
       <div className="tabs">
         <button className={activeTab === 'products' ? 'active' : ''} onClick={() => setActiveTab('products')}>
-          Products
+          My Products
         </button>
         <button className={activeTab === 'orders' ? 'active' : ''} onClick={() => setActiveTab('orders')}>
-          Orders
-        </button>
-        <button className={activeTab === 'analytics' ? 'active' : ''} onClick={() => setActiveTab('analytics')}>
-          Analytics
+          My Orders
         </button>
       </div>
 
       {activeTab === 'products' && (
         <div className="products-tab">
           <div className="tab-header">
-            <h2>Products Management</h2>
+            <h2>Manage My Products</h2>
             <button onClick={handleToggleForm}>
               {showProductForm ? 'Cancel' : 'Add New Product'}
             </button>
@@ -319,6 +301,7 @@ const AdminDashboard = () => {
                 <option value="New Balance">New Balance</option>
                 <option value="Converse">Converse</option>
                 <option value="Vans">Vans</option>
+                <option value="Under Armour">Under Armour</option>
               </select>
 
               <select
@@ -329,6 +312,9 @@ const AdminDashboard = () => {
                 <option value="Basketball">Basketball</option>
                 <option value="Casual">Casual</option>
                 <option value="Training">Training</option>
+                <option value="Soccer">Soccer</option>
+                <option value="Tennis">Tennis</option>
+                <option value="Walking">Walking</option>
               </select>
 
               <input
@@ -359,7 +345,7 @@ const AdminDashboard = () => {
 
               <input
                 type="url"
-                placeholder="Image URL"
+                placeholder="Main Image URL"
                 value={formData.mainImage}
                 onChange={(e) => setFormData({ ...formData, mainImage: e.target.value })}
                 required
@@ -493,15 +479,15 @@ const AdminDashboard = () => {
 
       {activeTab === 'orders' && (
         <div className="orders-tab">
-          <h2>Orders Management</h2>
+          <h2>My Product Orders</h2>
           <table className="orders-table">
             <thead>
               <tr>
                 <th>Order ID</th>
                 <th>Customer</th>
                 <th>Date</th>
-                <th>Total</th>
                 <th>Status</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -510,11 +496,22 @@ const AdminDashboard = () => {
                   <td>#{order._id.slice(-8).toUpperCase()}</td>
                   <td>{order.userName}</td>
                   <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                  <td>${Number(order.totalAmount || 0).toFixed(2)}</td>
                   <td>
                     <span className={`status ${String(order.orderStatus || '').toLowerCase()}`}>
                       {order.orderStatus}
                     </span>
+                  </td>
+                  <td>
+                    {['Pending', 'Processing'].includes(order.orderStatus) && (
+                      <select 
+                        value={order.orderStatus} 
+                        onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                      </select>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -522,46 +519,8 @@ const AdminDashboard = () => {
           </table>
         </div>
       )}
-
-      {activeTab === 'analytics' && analytics && (
-        <div className="analytics-tab">
-          <h2>Analytics Dashboard</h2>
-
-          <div className="analytics-grid">
-            <div className="analytics-card">
-              <h3>Revenue by Category</h3>
-              {(analytics?.revenue?.byCategory || []).map((cat) => (
-                <div key={cat.category} className="stat-row">
-                  <span>{cat.category}</span>
-                  <strong>${Number(cat.totalRevenue || 0).toFixed(2)}</strong>
-                </div>
-              ))}
-            </div>
-
-            <div className="analytics-card">
-              <h3>Top Rated Products</h3>
-              {(analytics?.topRated || []).map((product) => (
-                <div key={product._id} className="stat-row">
-                  <span>{product.name}</span>
-                  <span>⭐ {product.averageRating}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="analytics-card">
-              <h3>Low Stock Alert</h3>
-              {(analytics?.inventory?.lowStockProducts || []).map((product) => (
-                <div key={product._id} className="stat-row warning">
-                  <span>{product.name}</span>
-                  <strong>{product.totalStock} units</strong>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
-export default AdminDashboard;
+export default SellerDashboard;

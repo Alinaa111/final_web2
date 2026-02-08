@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { orderService, authService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/Profile.css';
 
 const Profile = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -92,6 +94,11 @@ const Profile = () => {
 
   return (
     <div className="profile-page">
+      {/* Back Button */}
+      <button className="back-button" onClick={() => navigate('/')}>
+        ← Back to Home
+      </button>
+
       <h1>My Profile</h1>
 
       <div className="profile-container">
