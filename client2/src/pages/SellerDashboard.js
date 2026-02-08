@@ -37,18 +37,18 @@ const SellerDashboard = () => {
     if (activeTab === 'orders') fetchOrders();
   }, [activeTab]);
 
-  const fetchProducts = async () => {
-    try {
-      // Backend should filter by seller automatically if user is a seller
-      const response = await productService.getAll();
-      const payload = response.data;
-      const data = payload?.data ?? payload;
-      const list = Array.isArray(data) ? data : (data?.products ?? data?.items ?? []);
-      setProducts(list);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    }
-  };
+ const fetchProducts = async () => {
+  try {
+    const response = await productService.getMine(); 
+    const payload = response.data;
+    const data = payload?.data ?? payload;
+    const list = Array.isArray(data) ? data : (data?.products ?? data?.items ?? []);
+    setProducts(list);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+  }
+};
+
 
   const fetchOrders = async () => {
     try {
