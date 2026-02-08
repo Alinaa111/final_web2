@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { productService } from '../services/api';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,13 +7,16 @@ import '../styles/ProductDetail.css';
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
-  
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
+  const [displayImage, setDisplayImage] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [review, setReview] = useState({ rating: 5, comment: '' });
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -21,20 +24,29 @@ const ProductDetail = () => {
 
   useEffect(() => {
     fetchProduct();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchProduct = async () => {
     try {
       const response = await productService.getById(id);
       const productData = response.data.data;
+
       setProduct(productData);
-      
-      // Set default color and size
+
+      // Set default color, size, and main image
       if (productData.colors && productData.colors.length > 0) {
-        setSelectedColor(productData.colors[0].name);
-        if (productData.colors[0].sizes && productData.colors[0].sizes.length > 0) {
-          setSelectedSize(productData.colors[0].sizes[0].size);
+        const firstColor = productData.colors[0];
+
+        setSelectedColor(firstColor.name);
+
+        if (firstColor.sizes && firstColor.sizes.length > 0) {
+          setSelectedSize(firstColor.sizes[0].size);
         }
+
+        setDisplayImage(firstColor.imageUrl || productData.mainImage);
+      } else {
+        setDisplayImage(productData.mainImage);
       }
     } catch (error) {
       console.error('Error fetching product:', error);
@@ -42,6 +54,11 @@ const ProductDetail = () => {
       setLoading(false);
     }
   };
+
+  const selectedColorObj = useMemo(() => {
+    if (!product || !selectedColor) return null;
+    return product.colors?.find(c => c.name === selectedColor) || null;
+  }, [product, selectedColor]);
 
   const handleAddToCart = () => {
     if (!selectedColor || !selectedSize) {
@@ -56,7 +73,7 @@ const ProductDetail = () => {
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
-    
+
     if (!isAuthenticated) {
       setMessage({ type: 'error', text: 'Please login to submit a review' });
       return;
@@ -69,17 +86,16 @@ const ProductDetail = () => {
       setReview({ rating: 5, comment: '' });
       fetchProduct(); // Refresh product data
     } catch (error) {
-      setMessage({ 
-        type: 'error', 
-        text: error.response?.data?.message || 'Failed to submit review' 
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Failed to submit review'
       });
     }
   };
 
   const getAvailableSizes = () => {
-    if (!selectedColor || !product) return [];
-    const colorObj = product.colors.find(c => c.name === selectedColor);
-    return colorObj ? colorObj.sizes : [];
+    if (!selectedColorObj) return [];
+    return selectedColorObj.sizes || [];
   };
 
   if (loading) {
@@ -92,6 +108,11 @@ const ProductDetail = () => {
 
   return (
     <div className="product-detail-page">
+      {/* Back Button */}
+      <button className="back-button" onClick={() => navigate('/shop')}>
+        ← Back to Shop
+      </button>
+
       {message.text && (
         <div className={`message ${message.type}`}>{message.text}</div>
       )}
@@ -99,11 +120,22 @@ const ProductDetail = () => {
       <div className="product-detail-container">
         {/* Product Images */}
         <div className="product-images">
-          <img src={product.mainImage} alt={product.name} className="main-image" />
+          <img
+            src={displayImage || product.mainImage}
+            alt={product.name}
+            className="main-image"
+          />
+
           {product.additionalImages && product.additionalImages.length > 0 && (
             <div className="additional-images">
               {product.additionalImages.map((img, index) => (
-                <img key={index} src={img} alt={`${product.name} ${index + 1}`} />
+                <img
+                  key={index}
+                  src={img}
+                  alt={`${product.name} ${index + 1}`}
+                  onClick={() => setDisplayImage(img)} // optional: click thumb -> main image
+                  style={{ cursor: 'pointer' }}
+                />
               ))}
             </div>
           )}
@@ -113,14 +145,16 @@ const ProductDetail = () => {
         <div className="product-info-section">
           <span className="brand">{product.brand}</span>
           <h1>{product.name}</h1>
-          
+
           {/* Rating */}
           {product.averageRating > 0 && (
             <div className="rating-section">
               <div className="stars">
                 {'⭐'.repeat(Math.round(product.averageRating))}
               </div>
-              <span>{product.averageRating.toFixed(1)} ({product.totalReviews} reviews)</span>
+              <span>
+                {product.averageRating.toFixed(1)} ({product.totalReviews} reviews)
+              </span>
             </div>
           )}
 
@@ -150,9 +184,15 @@ const ProductDetail = () => {
                   className={`color-option ${selectedColor === color.name ? 'selected' : ''}`}
                   onClick={() => {
                     setSelectedColor(color.name);
+
+                    // ✅ change main image per color
+                    setDisplayImage(color.imageUrl || product.mainImage);
+
                     // Reset size when color changes
-                    if (color.sizes.length > 0) {
+                    if (color.sizes?.length > 0) {
                       setSelectedSize(color.sizes[0].size);
+                    } else {
+                      setSelectedSize(null);
                     }
                   }}
                   style={{ backgroundColor: color.hexCode }}
@@ -195,7 +235,7 @@ const ProductDetail = () => {
           </div>
 
           {/* Add to Cart Button */}
-          <button 
+          <button
             className="add-to-cart-btn"
             onClick={handleAddToCart}
             disabled={!product.inStock}
@@ -222,7 +262,7 @@ const ProductDetail = () => {
         <div className="reviews-header">
           <h2>Customer Reviews</h2>
           {isAuthenticated && !showReviewForm && (
-            <button 
+            <button
               className="write-review-btn"
               onClick={() => setShowReviewForm(true)}
             >
@@ -241,7 +281,9 @@ const ProductDetail = () => {
                 onChange={(e) => setReview({ ...review, rating: Number(e.target.value) })}
               >
                 {[5, 4, 3, 2, 1].map(num => (
-                  <option key={num} value={num}>{num} Stars</option>
+                  <option key={num} value={num}>
+                    {num} Stars
+                  </option>
                 ))}
               </select>
             </div>
@@ -271,9 +313,7 @@ const ProductDetail = () => {
               <div key={review._id || index} className="review-item">
                 <div className="review-header">
                   <strong>{review.userName}</strong>
-                  <div className="stars">
-                    {'⭐'.repeat(review.rating)}
-                  </div>
+                  <div className="stars">{'⭐'.repeat(review.rating)}</div>
                 </div>
                 <p>{review.comment}</p>
                 <span className="review-date">
