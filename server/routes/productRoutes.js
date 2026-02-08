@@ -10,7 +10,7 @@ const {
   addReview,
   getFeaturedProducts
 } = require('../controllers/productController');
-const { protect, authorizeAdmin } = require('../middleware/auth');
+const { protect, authorizeAdmin, authorizeRoles } = require('../middleware/auth');
 
 // Public routes
 router.get('/', getProducts);
@@ -20,10 +20,10 @@ router.get('/:id', getProductById);
 // Protected routes (require login)
 router.post('/:id/reviews', protect, addReview);
 
-// Admin routes
-router.post('/', protect, authorizeAdmin, createProduct);
-router.patch('/:id', protect, authorizeAdmin, updateProduct);
-router.patch('/:id/stock', protect, authorizeAdmin, updateStock);
-router.delete('/:id', protect, authorizeAdmin, deleteProduct);
+// Admin & Seller routes
+router.post('/', protect, authorizeRoles('admin', 'seller'), createProduct);
+router.patch('/:id', protect, authorizeRoles('admin', 'seller'), updateProduct);
+router.patch('/:id/stock', protect, authorizeRoles('admin', 'seller'), updateStock);
+router.delete('/:id', protect, authorizeRoles('admin', 'seller'), deleteProduct);
 
 module.exports = router;
