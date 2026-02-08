@@ -53,6 +53,11 @@
   border-color: var(--border);
 }
 
+.logo-image {
+  width: 140px;
+  height: auto;
+}
+
 .logout-btn {
   padding: 8px 12px;
   border-radius: 999px;

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { orderService, authService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/Profile.css';
 
 const Profile = () => {
-  const { user, setUser } = useAuth();
+  const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);

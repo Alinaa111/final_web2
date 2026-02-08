@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import './Navbar.css';
+import logo from '../logo.png';
 
 const Navbar = () => {
   const { isAuthenticated, user, logout, isAdmin } = useAuth();
@@ -13,7 +14,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="nav-container">
         <Link to="/" className="nav-logo">
-          👟 ShoeStore
+          <img src={logo} alt="ShoeStore Logo" className="logo-image" />
         </Link>
 
         <ul className="nav-menu">
