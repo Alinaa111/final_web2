@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
 import { orderService } from '../services/api';
 import '../styles/Checkout.css';
 import SuccessModal from '../components/SuccessModal';
