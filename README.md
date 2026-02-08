@@ -1,4 +1,4 @@
- Bir Kadam E-commerce Platform - WEB Technologies 2 (Back End) Final Project
+ Bir Qadam E-commerce Platform - WEB Technologies 2 (Back End) Final Project
 
 A full-stack e-commerce application built with Node.js, Express, MongoDB, and React, showcasing advanced NoSQL database features and a robust, scalable architecture. This platform is designed to support multiple user roles, including a new Seller role, and is branded as Bir Kadam.
 
