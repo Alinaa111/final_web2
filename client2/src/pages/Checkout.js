@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { orderService } from '../services/api';
 import '../styles/Checkout.css';
 import SuccessModal from '../components/SuccessModal';
+import { useAuth } from '../contexts/AuthContext';
 
 const Checkout = () => {
   const { cart, getCartTotal, clearCart } = useCart();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [shippingAddress, setShippingAddress] = useState({
     street: '',
@@ -18,6 +20,19 @@ const Checkout = () => {
     phoneNumber: ''
   });
 
+  useEffect(() => {
+    if (user) {
+      setShippingAddress(prev => ({
+        street: user.address?.street || prev.street,
+        city: user.address?.city || prev.city,
+        state: user.address?.state || prev.state,
+        zipCode: user.address?.zipCode || prev.zipCode,
+        country: user.address?.country || prev.country,
+        phoneNumber: user.phoneNumber || prev.phoneNumber
+      }));
+    }
+  }, [user]);
+
   const [paymentMethod, setPaymentMethod] = useState('Credit Card');
   const [customerNotes, setCustomerNotes] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,11 +41,10 @@ const Checkout = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdOrder, setCreatedOrder] = useState(null);
 
-
   const subtotal = getCartTotal();
   const shipping = subtotal >= 100 ? 0 : 10;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
+  const tax = Math.round(subtotal * 0.08 * 100) / 100;
+  const total = Math.round((subtotal + shipping + tax) * 100) / 100;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,6 +52,8 @@ const Checkout = () => {
     setLoading(true);
 
     try {
+      if (cart.length === 0) throw new Error('Your cart is empty.');
+
       const items = cart.map(item => ({
         product: item.product._id,
         color: item.color,
@@ -45,12 +61,22 @@ const Checkout = () => {
         quantity: item.quantity
       }));
 
+      const safeShippingAddress = {
+        street: shippingAddress.street || '',
+        city: shippingAddress.city || '',
+        state: shippingAddress.state || '',
+        zipCode: shippingAddress.zipCode || '',
+        country: shippingAddress.country || 'USA',
+        phoneNumber: shippingAddress.phoneNumber || ''
+      };
+
       const orderData = {
         items,
-        shippingAddress,
+        shippingAddress: safeShippingAddress,
         paymentMethod,
         customerNotes
       };
+
 
       const response = await orderService.create(orderData);
 
@@ -63,19 +89,19 @@ const Checkout = () => {
       setShowSuccessModal(true);
       clearCart();
 
-
-    } catch (error) {
-      console.error('Order error:', error);
-      setError(error.response?.data?.message || 'Failed to place order. Please try again.');
+    } catch (err) {
+      console.error('Order error:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to place order. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-  
-  if (cart.length === 0 && !showSuccessModal) {
-    navigate('/cart');
-    return null;
-  }
+
+  useEffect(() => {
+    if (cart.length === 0 && !showSuccessModal) {
+      navigate('/cart');
+    }
+  }, [cart, showSuccessModal, navigate]);
 
 
   return (
@@ -219,15 +245,15 @@ const Checkout = () => {
       </div>
 
       <SuccessModal
-          isOpen={showSuccessModal}
-          orderId={createdOrder?.id}
-          total={createdOrder?.total?.toFixed(2)}
-          itemsCount={createdOrder?.itemsCount}
-          onClose={() => {
-              setShowSuccessModal(false);
-              navigate('/');
-          }}
-          />
+        isOpen={showSuccessModal}
+        orderId={createdOrder?.id}
+        total={createdOrder?.total?.toFixed(2)}
+        itemsCount={createdOrder?.itemsCount}
+        onClose={() => {
+          setShowSuccessModal(false);
+          navigate('/');
+        }}
+      />
     </div>
   );
 };
