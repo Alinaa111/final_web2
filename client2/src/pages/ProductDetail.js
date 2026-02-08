@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { productService } from '../services/api';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,6 +7,7 @@ import '../styles/ProductDetail.css';
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
 
@@ -107,6 +108,11 @@ const ProductDetail = () => {
 
   return (
     <div className="product-detail-page">
+      {/* Back Button */}
+      <button className="back-button" onClick={() => navigate('/shop')}>
+        ← Back to Shop
+      </button>
+
       {message.text && (
         <div className={`message ${message.type}`}>{message.text}</div>
       )}

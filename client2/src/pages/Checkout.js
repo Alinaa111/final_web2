@@ -80,6 +80,11 @@ const Checkout = () => {
 
   return (
     <div className="checkout-page">
+      {/* Back Button */}
+      <button className="back-button" onClick={() => navigate('/cart')}>
+        ← Back to Cart
+      </button>
+
       <h1>Checkout</h1>
 
       <div className="checkout-container">

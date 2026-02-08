@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { productService, orderService, analyticsService } from '../services/api';
 import '../styles/AdminDashboard.css';
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -268,6 +270,11 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard">
+      {/* Back Button */}
+      <button className="back-button" onClick={() => navigate('/')}>
+        ← Back to Home
+      </button>
+
       <h1>Admin Dashboard</h1>
 
       <div className="tabs">
