@@ -277,6 +277,8 @@ The landing page features the new 'Bir Kadam' branding, a hero section, and disp
 
 
 
+<img width="1866" height="906" alt="image" src="https://github.com/user-attachments/assets/3760457a-942e-4583-abd4-4a7b71b3f9c7" />
+<img width="1878" height="917" alt="image" src="https://github.com/user-attachments/assets/e094e889-b922-4c5f-a794-cab4fe6a11f6" />
 
 
 Figure 1: The Bir Kadam home page, showcasing the brand logo and featured products.
@@ -285,6 +287,10 @@ Figure 1: The Bir Kadam home page, showcasing the brand logo and featured produc
 
 Detailed product view allowing users to select colors and sizes, add to cart, and submit reviews. Includes dynamic image display based on color selection.
 
+<img width="1842" height="904" alt="image" src="https://github.com/user-attachments/assets/7e258bfc-a021-44c2-9dc2-15a6b726aaeb" />
+
+
+<img width="1856" height="913" alt="image" src="https://github.com/user-attachments/assets/bc7cba06-c9c9-48d9-92d7-afc75ffe0c3e" />
 
 
 
@@ -298,7 +304,7 @@ A seamless shopping cart experience with quantity controls, order summary, and a
 
 
 
-
+<img width="1850" height="910" alt="image" src="https://github.com/user-attachments/assets/243bdd14-2924-4b63-9dc9-13250cb2a082" />
 
 
 Figure 3: The shopping cart interface, showing selected items and subtotal.
@@ -307,6 +313,9 @@ Figure 3: The shopping cart interface, showing selected items and subtotal.
 
 
 
+<img width="1850" height="870" alt="image" src="https://github.com/user-attachments/assets/2c8373be-57fd-4ff2-bb32-e599bd89b595" />
+
+<img width="1877" height="894" alt="image" src="https://github.com/user-attachments/assets/8f8e895b-3970-4d58-a66b-ac8f1e875968" />
 
 Figure 4: The checkout page, where users enter shipping information and select payment methods.
 
@@ -315,7 +324,9 @@ Figure 4: The checkout page, where users enter shipping information and select p
 Users can manage their profile information, including address and phone number, and view their complete order history with status updates.
 
 
+<img width="1886" height="914" alt="image" src="https://github.com/user-attachments/assets/cefca311-5517-4f3f-86f9-6009879952d4" />
 
+<img width="1873" height="882" alt="image" src="https://github.com/user-attachments/assets/01bdb187-c1d9-4e0a-a3c2-f114d23dda92" />
 
 
 
@@ -325,7 +336,9 @@ Figure 5: User profile section displaying personal information and past orders.
 
 Dedicated dashboards for Admin and Seller roles to manage products (CRUD operations), view orders, and access sales analytics. Sellers have restricted access to only their products, demonstrating Role-Based Access Control (RBAC).
 
+<img width="1895" height="912" alt="image" src="https://github.com/user-attachments/assets/fe9bbf65-9dd6-4c44-b114-63170de928ee" />
 
+<img width="1289" height="608" alt="image" src="https://github.com/user-attachments/assets/c05e17fb-de05-402b-99c5-59d9f7be4b45" />
 
 
 
@@ -336,6 +349,7 @@ Figure 6: The Admin Dashboard, providing an overview of products, orders, and an
 
 User registration and login processes are secured using bcrypt for password hashing, ensuring sensitive data is protected against unauthorized access.
 
+<img width="1845" height="916" alt="image" src="https://github.com/user-attachments/assets/d951d52a-f9a7-4c5a-bd2e-273a6b6ee3fb" />
 
 
 
@@ -350,7 +364,7 @@ After running npm run seed (or node seed.js) to populate the database:
 Admin Account:
 
 •
-Email: admin@birkadam.com
+Email: admin@shoestore.com
 
 •
 Password: admin123
@@ -358,10 +372,10 @@ Password: admin123
 Seller Account:
 
 •
-Email: seller@birkadam.com
+Email: seller@shoesstore.com
 
 •
-Password: seller123
+Password: password123
 
 User Account:
 
