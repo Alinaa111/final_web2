@@ -1,57 +1,47 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./config/db');
+const mongoose = require('mongoose');
 const errorHandler = require('./middleware/errorHandler');
 const userRoutes = require('./routes/userRoutes');
-
-
-// Import routes
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 
-// Initialize express app
+// ------------------ CONNECT TO MONGO ------------------
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('✅ Connected to MongoDB Atlas');
+  } catch (error) {
+    console.error('❌ Error connecting to MongoDB:', error);
+    process.exit(1);
+  }
+};
+
+// ------------------ EXPRESS APP ------------------
 const app = express();
 
-// Connect to MongoDB
-connectDB();
-
-// MIDDLEWARE=
-
-// Body parser
+// MIDDLEWARE
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS - Allow frontend to access backend
 app.use(cors({
   origin: (origin, cb) => {
-    const allowList = (process.env.CLIENT_URLS || process.env.CLIENT_URL || 'http://localhost:3000,http://localhost:3001')
+    const allowList = (process.env.CLIENT_URLS || process.env.CLIENT_URL || 'http://localhost:3000')
       .split(',')
       .map(v => v.trim())
       .filter(Boolean);
 
-    // allow REST tools / same-origin (no origin header)
-    if (!origin) return cb(null, true);
-
+    if (!origin) return cb(null, true); // REST tools or same-origin
     if (allowList.includes(origin)) return cb(null, true);
     return cb(new Error(`CORS blocked for origin: ${origin}`));
   },
   credentials: true
 }));
 
-// Request logging (development)
-if (process.env.NODE_ENV === 'development') {
-  app.use((req, res, next) => {
-    console.log(`${req.method} ${req.path}`);
-    next();
-  });
-}
-
 // ROUTES
-
-// Health check
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -66,43 +56,39 @@ app.get('/', (req, res) => {
   });
 });
 
-// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/stats', analyticsRoutes);
 app.use('/api/users', userRoutes);
 
-
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
-  });
+  res.status(404).json({ success: false, message: 'Route not found' });
 });
 
 // Error handler (must be last)
 app.use(errorHandler);
 
-// START SERVER
-
+// ------------------ START SERVER ------------------
 const PORT = process.env.PORT || 5000;
 
-const server = app.listen(PORT, () => {
-  console.log(`
-   🚀 Shoe Store API Server                   
-            
-   📍 Running on: http://localhost:${PORT}              
-   🌍 Environment: ${process.env.NODE_ENV || 'development'}             
-  `);
-});
+const startServer = async () => {
+  await connectDB(); 
+  const server = app.listen(PORT, () => {
+    console.log(`
+🚀 Shoe Store API Server
+📍 Running on: http://localhost:${PORT}
+🌍 Environment: ${process.env.NODE_ENV || 'development'}
+    `);
+  });
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  console.error('❌ Unhandled Rejection:', err.message);
-  // Close server & exit process
-  server.close(() => process.exit(1));
-});
+  process.on('unhandledRejection', (err) => {
+    console.error('❌ Unhandled Rejection:', err.message);
+    server.close(() => process.exit(1));
+  });
+};
+
+startServer();
 
 module.exports = app;
