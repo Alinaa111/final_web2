@@ -117,11 +117,6 @@ const seedDatabase = async () => {
   try {
     await connectDB();
 
-    // Clear existing data
-    console.log('🗑️  Clearing existing data...');
-    await User.deleteMany({});
-    await Product.deleteMany({});
-    await Order.deleteMany({});
 
     // Create users
     console.log('👥 Creating users...');
