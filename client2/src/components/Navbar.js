@@ -24,7 +24,7 @@ const Navbar = () => {
 
           {isAuthenticated ? (
             <>
-              {!admin && (
+              {!admin && !seller && (
                 <li>
                   <Link to="/cart">🛒 Cart ({getCartItemsCount()})</Link>
                 </li>

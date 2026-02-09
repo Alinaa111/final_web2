@@ -69,6 +69,8 @@ const createOrder = async (req, res) => {
       // Create order item with denormalized data
       orderItems.push({
         product: product._id,
+        seller: product.seller,          
+        itemStatus: 'Pending',
         productName: product.name,
         productImage: product.mainImage,
         brand: product.brand,
@@ -282,6 +284,42 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const updateItemStatus = async (req, res) => {
+  try {
+    const { orderId, itemIndex } = req.params;
+    const { status } = req.body;
+
+    const allowed = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status' });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+    const idx = Number(itemIndex);
+    if (Number.isNaN(idx) || idx < 0 || idx >= order.items.length) {
+      return res.status(400).json({ success: false, message: 'Invalid item index' });
+    }
+
+    const item = order.items[idx];
+
+    if (String(item.seller) !== String(req.user._id)) {
+      return res.status(403).json({ success: false, message: 'Not your item' });
+    }
+
+    item.itemStatus = status;
+
+    await order.save();
+
+    return res.json({ success: true, message: 'Item status updated', data: order });
+  } catch (e) {
+    return res.status(500).json({ success: false, message: 'Error updating item status', error: e.message });
+  }
+};
+
+
+
 // @desc    Cancel order
 // @route   DELETE /api/orders/:id
 // @access  Private
@@ -348,5 +386,6 @@ module.exports = {
   getOrderById,
   getAllOrders,
   updateOrderStatus,
+  updateItemStatus,
   cancelOrder
 };

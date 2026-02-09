@@ -43,6 +43,8 @@ const ProtectedRoute = ({ children, adminOnly = false, sellerOnly = false }) => 
   return children;
 };
 
+
+
 function App() {
   return (
     <Router>

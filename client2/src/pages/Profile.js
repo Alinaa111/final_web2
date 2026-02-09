@@ -6,6 +6,7 @@ import '../styles/Profile.css';
 
 const Profile = () => {
   const { user } = useAuth();
+  const hideOrderHistory = user?.role === 'admin' || user?.role === 'seller';
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,8 +25,10 @@ const Profile = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+  if (!hideOrderHistory) fetchOrders();
+  else setLoading(false);
+}, [hideOrderHistory]);
+
 
   const fetchOrders = async () => {
     try {
@@ -212,7 +215,7 @@ const Profile = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Страна</label>
+                  <label>Country</label>
                   <input
                     type="text"
                     value={formData.address.country}
@@ -238,7 +241,7 @@ const Profile = () => {
             /* View Mode */
             <div className="info-card">
               <div className="info-row">
-                <strong>Имя:</strong>
+                <strong>Name:</strong>
                 <span>{user.name}</span>
               </div>
               <div className="info-row">
@@ -276,6 +279,7 @@ const Profile = () => {
         </section>
 
         {/* Order History */}
+        {!hideOrderHistory && (
         <section className="orders-section">
           <h2>Order History</h2>
           {loading ? (
@@ -330,6 +334,7 @@ const Profile = () => {
             </div>
           )}
         </section>
+        )}
       </div>
     </div>
   );

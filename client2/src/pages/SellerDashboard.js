@@ -266,9 +266,8 @@ const SellerDashboard = () => {
         <button className={activeTab === 'products' ? 'active' : ''} onClick={() => setActiveTab('products')}>
           My Products
         </button>
-        <button className={activeTab === 'orders' ? 'active' : ''} onClick={() => setActiveTab('orders')}>
-          My Orders
-        </button>
+        <button onClick={() => setActiveTab('orders')}>My Orders</button>
+
       </div>
 
       {activeTab === 'products' && (

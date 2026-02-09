@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
+const userRoutes = require('./routes/userRoutes');
+
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -69,6 +71,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/stats', analyticsRoutes);
+app.use('/api/users', userRoutes);
+
 
 // 404 handler
 app.use((req, res) => {

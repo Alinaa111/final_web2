@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { productService, orderService, analyticsService } from '../services/api';
+import { productService, orderService, analyticsService, userService } from '../services/api';
 import '../styles/AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -11,6 +11,8 @@ const AdminDashboard = () => {
   const [analytics, setAnalytics] = useState(null);
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   const makeEmptyProduct = () => ({
     name: '',
@@ -37,6 +39,7 @@ const AdminDashboard = () => {
     if (activeTab === 'products') fetchProducts();
     if (activeTab === 'orders') fetchOrders();
     if (activeTab === 'analytics') fetchAnalytics();
+    if (activeTab === 'users') fetchUsers();
   }, [activeTab]);
 
   const fetchProducts = async () => {
@@ -84,6 +87,30 @@ const AdminDashboard = () => {
       });
     } catch (error) {
       console.error('Error fetching analytics:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const res = await userService.getAll();
+      const payload = res.data;
+      setUsers(payload?.data ?? payload ?? []);
+    } catch (e) {
+      console.error(e);
+      alert(e?.response?.data?.message || 'Failed to load users');
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const changeRole = async (userId, role) => {
+    try {
+      await userService.updateRole(userId, role);
+      await fetchUsers();
+    } catch (e) {
+      console.error(e);
+      alert(e?.response?.data?.message || 'Failed to update role');
     }
   };
 
@@ -287,7 +314,51 @@ const AdminDashboard = () => {
         <button className={activeTab === 'analytics' ? 'active' : ''} onClick={() => setActiveTab('analytics')}>
           Analytics
         </button>
+        <button className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>
+          Users
+        </button>
       </div>
+
+      {activeTab === 'users' && (
+        <div className="users-tab">
+          <h2>Manage Users</h2>
+
+          {loadingUsers ? (
+            <p>Loading users...</p>
+          ) : (
+            <table className="products-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Current Role</th>
+                  <th>Change Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u._id}>
+                    <td>{u.name}</td>
+                    <td>{u.email}</td>
+                    <td>{u.role}</td>
+                    <td>
+                      <select
+                        value={u.role}
+                        onChange={(e) => changeRole(u._id, e.target.value)}
+                        disabled={u.role === 'admin'}
+                      >
+                        <option value="user">user</option>
+                        <option value="seller">seller</option>
+                        <option value="admin">admin</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
 
       {activeTab === 'products' && (
         <div className="products-tab">
@@ -523,7 +594,7 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {activeTab === 'analytics' && analytics && (
+      {activeTab === 'analytics' && (
         <div className="analytics-tab">
           <h2>Analytics Dashboard</h2>
 

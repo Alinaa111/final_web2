@@ -79,4 +79,12 @@ export const analyticsService = {
   getCustomers: () => api.get('/stats/customers')
 };
 
+export const userService = {
+  getAll: () => api.get('/users'),
+  updateRole: (id, role) => api.patch(`/users/${id}/role`, { role })
+};
+
+
+
+
 export default api;
